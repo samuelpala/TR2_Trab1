@@ -1,4 +1,4 @@
 ALL: main
 
-main:
-	g++ -Wall main.cpp -o teste
+main: 	main.cpp
+	g++ -Wall -std=c++11 main.cpp -o teste
