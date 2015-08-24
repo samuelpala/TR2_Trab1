@@ -44,7 +44,7 @@ typedef struct _on{
 	
 	bool operator>(const _on& rhs) const
 	{
-		return peso < rhs.peso;
+		return peso > rhs.peso;
 	}
 
 	bool operator==(const _on& rhs) const
@@ -83,12 +83,97 @@ vector<extern_node> utils_tomem(string nome_arq)
 	}
 	return grafo;
 }
+
+bool find(int a, int b, set<set<int>> comp){
+	set<int> comp_aux;
+	int flag;
+	for(set<set<int>>::iterator it = comp.begin(); it != comp.end(); it++){
+		comp_aux = *it;
+		flag = 0;
+		for(set<int>::iterator it2 = comp_aux.begin(); it2 != comp_aux.end(); it2++){
+			if( (a == *it2) || (b == *it2) )
+				flag++;
+		}
+		if(flag == 2)
+			return true;
+	}
+	return false;
+}
+
+void merge(int a, int b, set<set<int>> &comp){
+	set<int> comp_aux, comp_aux_a, comp_aux_b;
+	int flag = 0;
+	for(set<set<int>>::iterator it = comp.begin(); it != comp.end(); it++){
+		comp_aux = *it;
+		for(set<int>::iterator it2 = comp_aux.begin(); it2 != comp_aux.end(); it2++){
+			if(a == *it2){
+				flag++;
+				comp_aux_a = comp_aux;
+				break;
+			}
+			else if(b == *it2){
+				flag++;
+				comp_aux_b = comp_aux;
+				break;
+			}
+		}
+		if(flag == 2)
+			break;
+	}
+	comp.erase(comp_aux_a);
+	comp.erase(comp_aux_b);
+	comp_aux_a.insert(comp_aux_b.begin(), comp_aux_b.end());
+	comp.insert(comp_aux_a);
+	
+	
+}
+
+void kruskal(set<int> vertices, set<type_edge> edges){
+	priority_queue<type_edge, vector<type_edge>, greater<type_edge>> p_edges;
+	int ncomp = vertices.size();
+	set<set<int>> components;
+	set<int> aux;
+	type_edge e;
+	char* aux_s;
+	int a, b;
+
+	for(set<int>::iterator it = vertices.begin(); it != vertices.end(); it++){
+		aux.insert(*it);
+		components.insert(aux);
+		aux.clear();
+	}
+	for(set<type_edge>::iterator iter=edges.begin(); iter != edges.end(); ++iter){
+		p_edges.push(*iter);
+	}
+	while(ncomp > 1){
+		e = p_edges.top();
+		p_edges.pop();
+		aux_s = (char*)e.nome.c_str();
+		aux_s = strtok(aux_s, ",");
+		a = stoi(aux_s);
+		aux_s = strtok(NULL, "\n\0");
+		b = stoi(aux_s);
+		if(!find(a, b, components)){
+			merge(a,b,components);
+			ncomp--;
+			cout << "ACEITOU -> NOME: " << a << "," << b << "/ PESO: " << e.peso << endl;
+		}
+		else
+			cout << "DESCARTADO -> NOME: " << a << "," << b << "/ PESO: " << e.peso << endl;
+	}
+}
+
+
 int main()
 {
 	set<int> vertices;
 	set<type_edge> edges;
     
 	vector<extern_node> grafo = utils_tomem("entrada.txt");
+// 	for(int i=0;i<(int)grafo.size();i++)
+// 	{
+// 		cout << grafo.at(i) << endl;
+// 	}
 	for(int i=0;i<(int)grafo.size();i++)
 	{
                 //Inserimos os vertices no conjunto de vertices
@@ -97,15 +182,15 @@ int main()
 		list<intern_node>::iterator it = viz_aux.begin();
                 
                 //For para andar pela lista de vizinhos do vertice que acabou de ser inserido no conjunto
-		for(int j=0;j<(int)viz_aux.size();j++)
+		for(;it != viz_aux.end();it++)
 		{
 			string nome;
 			type_edge aux;
 			
 			nome.clear();
-			advance(it, j);
+			//advance(it, j);
                         
-                        //nome da aresta eh sempre uma string 'MENOR,MAIOR' onde MENOR e MAIOR sao numeros (por enquanto)
+			//nome da aresta eh sempre uma string 'MENOR,MAIOR' onde MENOR e MAIOR sao numeros (por enquanto)
 			if(grafo.at(i).nome <= it->nome){
 				nome.append(to_string(grafo.at(i).nome) );
 				nome += ',';
@@ -119,8 +204,9 @@ int main()
 			aux.nome = nome;
 			aux.peso = it->peso;
                         
-                        //Inserimos a aresta no conjunto de arestas. Caso o nome da aresta ja exista, o conjunto nao insere nada
-                        edges.insert(aux);
+			//Inserimos a aresta no conjunto de arestas. Caso o nome da aresta ja exista, o conjunto nao insere nada
+			//if(edges.find(aux) == edges.end() )
+			edges.insert(aux);
 		}
 	}
 	//Printa conjunto de vertices
@@ -133,7 +219,7 @@ int main()
 		cout<< iter->nome << " " << iter->peso << endl;
 	}
 
-	
+	kruskal(vertices, edges);
 	
         
 }
