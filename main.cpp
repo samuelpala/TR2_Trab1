@@ -174,7 +174,9 @@ int main()
 // 	{
 // 		cout << grafo.at(i) << endl;
 // 	}
-	for(int i=0;i<(int)grafo.size();i++)
+	int tam = grafo.size();
+	
+	for(int i=0;i<tam;i++)
 	{
                 //Inserimos os vertices no conjunto de vertices
 		vertices.insert(grafo.at(i).nome);
@@ -221,5 +223,6 @@ int main()
 
 	kruskal(vertices, edges);
 	
+	return 0;
         
 }
