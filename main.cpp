@@ -182,12 +182,12 @@ vector<extern_node> kruskal(set<int> vertices, set<Edge> edges){
 		if(!find(a, b, components)){
 			merge(a,b,components);
 			ncomp--;
-			//cout << "ACEITOU -> NOME: " << a << "," << b << "/ PESO: " << e.peso << endl;
+			cout << "ACEITOU -> NOME: " << a << "," << b << "/ PESO: " << e.peso << endl;
 			add_elemento(lista, a,b,e.peso);
 		}
 		else
 		{
-			//cout << "CICLO DESCARTADO -> NOME: " << a << "," << b << "/ PESO: " << e.peso << endl;
+			cout << "CICLO DESCARTADO -> NOME: " << a << "," << b << "/ PESO: " << e.peso << endl;
 		}
 	}
 	return lista;
@@ -231,21 +231,32 @@ void gerar_vertices_arestas(vector<extern_node> grafo,set<int>& vertices,set<Edg
 	}
 }
 
-int main()
+int main(int argc,char**argv)
 {
-	set<int> vertices;
-	set<Edge> edges;
-
-	vector<extern_node> grafo = utils_tomem("entrada.txt");
-
-	gerar_vertices_arestas(grafo,vertices,edges);
-
-	grafo = kruskal(vertices, edges);
-	for(int i=0;i<(int) grafo.size();i++)
+	if(argc < 2)
 	{
-		cout << grafo[i] << endl;
+		cerr << "Usage: ./teste <nome_arq>.<ext>"<< endl;
+		return 1;
 	}
+	else
+	{
+		set<int> vertices;
+		set<Edge> edges;
 
+		vector<extern_node> grafo = utils_tomem(argv[1]);
+		for(int i=0;i<(int) grafo.size();i++)
+		{
+			cout << grafo[i] << endl;
+		}
+
+		gerar_vertices_arestas(grafo,vertices,edges);
+
+		grafo = kruskal(vertices, edges);
+		for(int i=0;i<(int) grafo.size();i++)
+		{
+			cout << grafo[i] << endl;
+		}
+	}
 	return 0;
 
 }
