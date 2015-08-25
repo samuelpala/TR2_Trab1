@@ -108,6 +108,8 @@ vector<extern_node> utils_tomem(string nome_arq)
 	return grafo;
 }
 
+//Argumentos: vertice 'a', vertice 'b', e um conjunto de conjuntos de ints
+//Funcao: retorna true se 'a' e 'b' estão no mesmo conjunto. Retorna false caso contrario
 bool find(int a, int b, set<set<int> > comp){
 	set<int> comp_aux;
 	int flag;
@@ -124,6 +126,8 @@ bool find(int a, int b, set<set<int> > comp){
 	return false;
 }
 
+//Argumentos: vertices 'a' e 'b', e um conjunto de conjuntos de intern_node
+//Funcao: Procura o conjunto aonde 'a' esta, procura o conjunto aonde 'b' esta e faz a uniao dos 2 conjuntos
 void merge(int a, int b, set<set<int> > &comp){
 	set<int> comp_aux, comp_aux_a, comp_aux_b;
 	int flag = 0;
@@ -163,14 +167,18 @@ vector<extern_node> kruskal(set<int> vertices, set<Edge> edges){
 	int a, b;
 	vector<extern_node> lista;
 
+	//Components eh um conjunto de 'conjunto de ints'.
 	for(set<int>::iterator it = vertices.begin(); it != vertices.end(); it++){
 		aux.insert(*it);
 		components.insert(aux);
 		aux.clear();
 	}
+	//Colocamos as arestas com seus respectivos pesos na priority_queue (que ira ordenar de acordo com o peso)
 	for(set<Edge>::iterator iter=edges.begin(); iter != edges.end(); ++iter){
 		p_edges.push(*iter);
 	}
+	
+	//Grafo final tera vertices-1 arestas
 	while(ncomp > 1){
 		e = p_edges.top();
 		p_edges.pop();
