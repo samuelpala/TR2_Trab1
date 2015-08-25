@@ -29,31 +29,55 @@ typedef struct _en
 			os << i->nome << "[" << i->peso << "] ";
 		}
 		return os;
-
 	}
 }extern_node;
 
-typedef struct _on{
+typedef struct _edge{
 	string nome;
 	int peso;
-	
-	bool operator<(const _on& rhs) const
+
+	bool operator<(const _edge& rhs) const
 	{
 		return nome < rhs.nome;
 	}
-	
-	bool operator>(const _on& rhs) const
+
+	bool operator>(const _edge& rhs) const
 	{
 		return peso > rhs.peso;
 	}
 
-	bool operator==(const _on& rhs) const
+	bool operator==(const _edge& rhs) const
 	{
 		return nome == rhs.nome;
 	}
-}type_edge;
+}Edge;
 
+void add_element(vector<extern_node>& src, int vertex, int vizinho, int peso);
 vector<extern_node> utils_tomem(string nome_arq);
+void gerar_vertices_arestas(vector<extern_node> grafo,set<int>& vertices,set<Edge>& edges);
+vector<extern_node> kruskal(set<int> vertices, set<Edge> edges);
+void merge(int a, int b, set<set<int> > &comp);
+bool find(int a, int b, set<set<int> > comp);
+void add_elemento(vector<extern_node>& lista, int a, int b, int peso)
+{
+	bool achou = false;
+	for(vector<extern_node>::iterator i=lista.begin();i!=lista.end();i++)
+	{
+		if(i->nome == a)
+		{
+			achou = true;
+			i->vizinhos.push_back(intern_node(b,peso));
+			break;
+		}
+	}
+	if(!achou)
+	{
+		extern_node n;
+		n.nome = a;
+		n.vizinhos.push_back(intern_node(b,peso));
+		lista.push_back(n);
+	}
+}
 vector<extern_node> utils_tomem(string nome_arq)
 {
 	fstream sc;
@@ -67,27 +91,27 @@ vector<extern_node> utils_tomem(string nome_arq)
 		extern_node n;
 		if(s!="")
 		{
-			pch = strtok((char*)s.c_str(),"\t ");
+			pch = strtok((char*)s.c_str(),"\t -[];");
 			while(pch!=NULL)
 			{
 				lista.push_back(atoi(pch));
-				pch = strtok(NULL,"\t []");
+				pch = strtok(NULL,"\t -[];");
 			}
+			n.nome = lista.at(0);
+			for(int i=1;i<(int)lista.size();i+=2)
+			{
+				n.vizinhos.push_back(intern_node(lista.at(i),lista.at(i+1)));
+			}
+			grafo.push_back(n);
 		}
-		n.nome = lista.at(0);
-		for(int i=1;i<(int)lista.size();i+=2)
-		{
-			n.vizinhos.push_back(intern_node(lista.at(i),lista.at(i+1)));
-		}
-		grafo.push_back(n);
 	}
 	return grafo;
 }
 
-bool find(int a, int b, set<set<int>> comp){
+bool find(int a, int b, set<set<int> > comp){
 	set<int> comp_aux;
 	int flag;
-	for(set<set<int>>::iterator it = comp.begin(); it != comp.end(); it++){
+	for(set<set<int> >::iterator it = comp.begin(); it != comp.end(); it++){
 		comp_aux = *it;
 		flag = 0;
 		for(set<int>::iterator it2 = comp_aux.begin(); it2 != comp_aux.end(); it2++){
@@ -100,10 +124,10 @@ bool find(int a, int b, set<set<int>> comp){
 	return false;
 }
 
-void merge(int a, int b, set<set<int>> &comp){
+void merge(int a, int b, set<set<int> > &comp){
 	set<int> comp_aux, comp_aux_a, comp_aux_b;
 	int flag = 0;
-	for(set<set<int>>::iterator it = comp.begin(); it != comp.end(); it++){
+	for(set<set<int> >::iterator it = comp.begin(); it != comp.end(); it++){
 		comp_aux = *it;
 		for(set<int>::iterator it2 = comp_aux.begin(); it2 != comp_aux.end(); it2++){
 			if(a == *it2){
@@ -124,25 +148,27 @@ void merge(int a, int b, set<set<int>> &comp){
 	comp.erase(comp_aux_b);
 	comp_aux_a.insert(comp_aux_b.begin(), comp_aux_b.end());
 	comp.insert(comp_aux_a);
-	
-	
+
+
 }
 
-void kruskal(set<int> vertices, set<type_edge> edges){
-	priority_queue<type_edge, vector<type_edge>, greater<type_edge>> p_edges;
+
+vector<extern_node> kruskal(set<int> vertices, set<Edge> edges){
+	priority_queue<Edge, vector<Edge>, greater<Edge> > p_edges;
 	int ncomp = vertices.size();
-	set<set<int>> components;
+	set<set<int> > components;
 	set<int> aux;
-	type_edge e;
+	Edge e;
 	char* aux_s;
 	int a, b;
+	vector<extern_node> lista;
 
 	for(set<int>::iterator it = vertices.begin(); it != vertices.end(); it++){
 		aux.insert(*it);
 		components.insert(aux);
 		aux.clear();
 	}
-	for(set<type_edge>::iterator iter=edges.begin(); iter != edges.end(); ++iter){
+	for(set<Edge>::iterator iter=edges.begin(); iter != edges.end(); ++iter){
 		p_edges.push(*iter);
 	}
 	while(ncomp > 1){
@@ -156,42 +182,34 @@ void kruskal(set<int> vertices, set<type_edge> edges){
 		if(!find(a, b, components)){
 			merge(a,b,components);
 			ncomp--;
-			cout << "ACEITOU -> NOME: " << a << "," << b << "/ PESO: " << e.peso << endl;
+			//cout << "ACEITOU -> NOME: " << a << "," << b << "/ PESO: " << e.peso << endl;
+			add_elemento(lista, a,b,e.peso);
 		}
 		else
-			cout << "DESCARTADO -> NOME: " << a << "," << b << "/ PESO: " << e.peso << endl;
+		{
+			//cout << "CICLO DESCARTADO -> NOME: " << a << "," << b << "/ PESO: " << e.peso << endl;
+		}
 	}
+	return lista;
 }
-
-
-int main()
+void gerar_vertices_arestas(vector<extern_node> grafo,set<int>& vertices,set<Edge>& edges)
 {
-	set<int> vertices;
-	set<type_edge> edges;
-    
-	vector<extern_node> grafo = utils_tomem("entrada.txt");
-// 	for(int i=0;i<(int)grafo.size();i++)
-// 	{
-// 		cout << grafo.at(i) << endl;
-// 	}
 	int tam = grafo.size();
-	
 	for(int i=0;i<tam;i++)
 	{
-                //Inserimos os vertices no conjunto de vertices
+		//Inserimos os vertices no conjunto de vertices
 		vertices.insert(grafo.at(i).nome);
 		list<intern_node> viz_aux = grafo.at(i).vizinhos;
 		list<intern_node>::iterator it = viz_aux.begin();
-                
-                //For para andar pela lista de vizinhos do vertice que acabou de ser inserido no conjunto
+
+		//For para andar pela lista de vizinhos do vertice que acabou de ser inserido no conjunto
 		for(;it != viz_aux.end();it++)
 		{
 			string nome;
-			type_edge aux;
-			
+			Edge aux;
+
 			nome.clear();
-			//advance(it, j);
-                        
+
 			//nome da aresta eh sempre uma string 'MENOR,MAIOR' onde MENOR e MAIOR sao numeros (por enquanto)
 			if(grafo.at(i).nome <= it->nome){
 				nome.append(to_string(grafo.at(i).nome) );
@@ -205,24 +223,29 @@ int main()
 			}
 			aux.nome = nome;
 			aux.peso = it->peso;
-                        
+
 			//Inserimos a aresta no conjunto de arestas. Caso o nome da aresta ja exista, o conjunto nao insere nada
 			//if(edges.find(aux) == edges.end() )
 			edges.insert(aux);
 		}
 	}
-	//Printa conjunto de vertices
-	for(set<int>::iterator iter=vertices.begin(); iter != vertices.end(); ++iter){
-		cout<< *iter << endl;
-	}
-	cout << endl;
-        //Printa conjunto de arestas com seus pesos
-	for(set<type_edge>::iterator iter=edges.begin(); iter != edges.end(); ++iter){
-		cout<< iter->nome << " " << iter->peso << endl;
+}
+
+int main()
+{
+	set<int> vertices;
+	set<Edge> edges;
+
+	vector<extern_node> grafo = utils_tomem("entrada.txt");
+
+	gerar_vertices_arestas(grafo,vertices,edges);
+
+	grafo = kruskal(vertices, edges);
+	for(int i=0;i<(int) grafo.size();i++)
+	{
+		cout << grafo[i] << endl;
 	}
 
-	kruskal(vertices, edges);
-	
 	return 0;
-        
+
 }
