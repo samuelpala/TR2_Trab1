@@ -61,13 +61,20 @@ bool find(int a, int b, set<set<int> > comp);
 void add_elemento(vector<extern_node>& lista, int a, int b, int peso)
 {
 	bool achou = false;
+	int flag = 0;
 	for(vector<extern_node>::iterator i=lista.begin();i!=lista.end();i++)
 	{
 		if(i->nome == a)
 		{
 			achou = true;
-			i->vizinhos.push_back(intern_node(b,peso));
-			break;
+			for(list<intern_node>::iterator it = i->vizinhos.begin(); it != i->vizinhos.end(); it++){
+				if(it->nome == b){
+					flag = 1;
+					break;
+				}
+			}
+			if(!flag)
+				i->vizinhos.push_back(intern_node(b,peso));
 		}
 	}
 	if(!achou)
@@ -100,9 +107,11 @@ vector<extern_node> utils_tomem(string nome_arq)
 			n.nome = lista.at(0);
 			for(int i=1;i<(int)lista.size();i+=2)
 			{
-				n.vizinhos.push_back(intern_node(lista.at(i),lista.at(i+1)));
+				add_elemento(grafo,n.nome,lista.at(i),lista.at(i+1));
+				add_elemento(grafo,lista.at(i),n.nome,lista.at(i+1));
+				//n.vizinhos.push_back(intern_node(lista.at(i),lista.at(i+1)));
 			}
-			grafo.push_back(n);
+			//grafo.push_back(n);
 		}
 	}
 	return grafo;
@@ -192,6 +201,7 @@ vector<extern_node> kruskal(set<int> vertices, set<Edge> edges){
 			ncomp--;
 			cout << "ACEITOU -> NOME: " << a << "," << b << "/ PESO: " << e.peso << endl;
 			add_elemento(lista, a,b,e.peso);
+			add_elemento(lista, b,a,e.peso);
 		}
 		else
 		{
